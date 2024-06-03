@@ -168,6 +168,42 @@ public:
             std::copy(tmp.begin(), tmp.end(), std::back_inserter(out));
         }
 
+        if(at(x, y).name == PIECE_NAMES::PAWN){
+            Move sm = {1,1};
+            if(at(x, y).color == PIECE_COLOR::WHITE) reverseMove(sm);
+            int ex = x + sm.delta_x;
+            int ey = y + sm.delta_y;
+            if(ex >= 0 and ey >= 0 and ey < 8 and ex < 8){
+                if(at(ex, ey).name != PIECE_NAMES::NO_PIECE){
+                    if(at(ex, ey).color != at(x, y).color){
+                        Board nextBoard(this->board);
+                        nextBoard.makeMove(ex, ey, sm);
+
+                        if(!nextBoard.isKingUnderAttack(at(x, y).color, false)){
+                            out.push_back(sm);
+                        }
+                    }
+                }
+            }
+
+            sm = {-1,1};
+            if(at(x, y).color == PIECE_COLOR::WHITE) reverseMove(sm);
+            ex = x + sm.delta_x;
+            ey = y + sm.delta_y;
+            if(ex >= 0 and ey >= 0 and ey < 8 and ex < 8){
+                if(at(ex, ey).name != PIECE_NAMES::NO_PIECE){
+                    if(at(ex, ey).color != at(x, y).color){
+                        Board nextBoard(this->board);
+                        nextBoard.makeMove(ex, ey, sm);
+
+                        if(!nextBoard.isKingUnderAttack(at(x, y).color, false)){
+                            out.push_back(sm);
+                        }
+                    }
+                }
+            }
+        }
+
         return out;
     }
 

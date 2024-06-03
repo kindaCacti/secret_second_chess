@@ -42,9 +42,9 @@ public:
     int translateToMoveIndex(char movX, char movY){
         int out = movX - 'a';
         if(out < 0 or out > 7) return -1;
-        int ypos = movY-'1';
+        int ypos = movY - '1';
         if(ypos < 0 or ypos > 7) return -1;
-        out += ypos*8;
+        out += (7 - ypos)*8;
         return out;
     }
 
@@ -71,6 +71,8 @@ public:
 
         int addx = movX + mv.delta_x;
         int addy = movY + mv.delta_y;
+
+        addy = 7 - addy;
 
         std::string out = "";
         out.push_back('a' + addx);
