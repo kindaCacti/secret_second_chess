@@ -24,7 +24,12 @@ struct Move{
         return {delta_x * a, delta_y * a};
     }
 
-    std::string toString(){
+    bool operator==(Move& mv){
+        if(mv.delta_x == delta_x and mv.delta_y == delta_y) return true;
+        return false;
+    }
+
+    std::string toString() const{
         return std::to_string(delta_x) + "x"+std::to_string(delta_y) + "\n";
     }
 };

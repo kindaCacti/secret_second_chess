@@ -1,20 +1,35 @@
 #include <iostream>
 #include <vector>
-#include "./chess_API/board.h"
+#include "./chess_API/game.h"
 
 int main(){
-    Board b;
-    b.setPieces();
-    std::cout << b.toString() << std::endl;
+    Game game;
+    while(game.isOngoing()){
+        std::cout<<game<<std::endl;
+        char movX = 0, movY = 0;
+        int roundAtTheStart = game.getRound();
 
-    for(int i = 0; i<8; i++){
-        for(int j = 0; j<8; j++){
-            std::cout<<pieceChar(b.at(i, j))<<" at "<<i<<"x"<<j<<" :\n";
-            std::vector<Move> moves = b.getMoves(i, j);
-            for(int k = 0; k<moves.size(); k++){
-                std::cout<<moves[k].toString();
+        do{
+            do{
+                std::cout<<game.askForMovement();
+                std::cin>>movX>>movY;
+            }while(!game.choosePiece(movX, movY, std::cout));
+
+            game.showPossibleMoves(std::cout);
+
+            char ex, ey;
+            std::cin>>ex;
+
+            if(ex == 'o') continue;
+            if(ex=='q') return 0;
+
+            std::cin>>ey;
+
+            if(!game.makeMove(ex, ey)){
+                std::cout<<"Incorrect Move"<<std::endl;
             }
-        }
+
+        }while(game.getRound() == roundAtTheStart);
     }
     return 0;
 }

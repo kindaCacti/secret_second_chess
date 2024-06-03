@@ -48,7 +48,7 @@ public:
         board[63] = {PIECE_NAMES::ROOK,     PIECE_COLOR::WHITE};
     }
 
-    std::string toString(){
+    std::string toString() const{
         int resolve = 0;
         std::string out = "";
 
@@ -68,6 +68,10 @@ public:
 
     Piece at(int x, int y){
         int index = y*8 + x;
+        return board[index];
+    }
+
+    Piece at(int index){
         return board[index];
     }
 
