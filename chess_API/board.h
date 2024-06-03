@@ -1,6 +1,7 @@
 #pragma once
 #include "pieces.h"
-
+#include <algorithm>
+#include <set>
 
 class Board{
     Piece board[64];
@@ -65,33 +66,133 @@ public:
         return out;
     }
 
-    bool isFreeAt(int x, int y){
+    Piece at(int x, int y){
         int index = y*8 + x;
-
-        if(x < 0 or x > 7 or y < 0 or y > 7) return false;
-
-        if(board[index].name == PIECE_NAMES::NO_PIECE) return true;
-        return false;
+        return board[index];
     }
 
-    std::vector<Move> makeMultipleMoves(Move mv, int fx, int fy){
+    std::vector<Move> generateMoves(Move mv, int fx, int fy, int amm, bool check = true){
         std::vector<Move> out;
 
-        for(int i = 1; i<=8; i++){
+        for(int i = 1; i<=amm; i++){
             Move nm(mv*i);
             int nx = fx + nm.delta_x;
             int ny = fy + nm.delta_y;
 
-            if(!br.isFreeAt(nx, ny)) break;
-            out.push_back(nm);
+            if(nx < 0 or nx > 7 or ny < 0 or ny > 7) break;
+
+            Board nextBoard(this->board);
+            nextBoard.makeMove(fx, fy, nm);
+            PIECE_COLOR pc = board[fx + fy*8].color;
+            if(check and nextBoard.isKingUnderAttack(pc, false)) continue;
+
+            if(at(nx, ny).name == PIECE_NAMES::NO_PIECE){
+                out.push_back(nm);
+                continue;
+            }
+
+            if(at(nx, ny).color != at(fx, fy).color) out.push_back(nm);
+
+            break;
         }
 
         return out;
     }
 
-    std::vector<Move> getMoves(int x, int y){
+    void reverseMove(Move& mv){
+        mv.delta_x *= -1;
+        mv.delta_y *= -1;
+    }
+
+    int getKingPosition(PIECE_COLOR pc){
+        for(int i = 0; i<64; i++){
+            if(board[i].name == PIECE_NAMES::KING and board[i].color == pc){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    bool isKingUnderAttack(PIECE_COLOR pc, bool check = false){
+        int kingPos = getKingPosition(pc);
+        for(int i = 0; i<64; i++){
+            if(board[i].name == PIECE_NAMES::NO_PIECE) continue;
+            if(pc != board[i].color){
+                int x = i%8;
+                int y = i/8;
+                std::vector<Move> tmp = getMoves(x, y, check);
+
+                for(int j = 0; j<tmp.size(); j++){
+                    int nx = x + tmp[j].delta_x;
+                    int ny = y + tmp[j].delta_y;
+                    if(nx + ny*8 == kingPos) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    void makeMove(int fx, int fy, Move mv){
+        Piece tmp = board[fx + fy*8];
+        board[fx + fy*8] = {PIECE_NAMES::NO_PIECE};
+        tmp.moves_done++;
+        int tx = mv.delta_x + fx;
+        int ty = mv.delta_y + fy;
+        board[tx + ty*8] = tmp;
+    }
+
+    std::vector<Move> getMoves(int x, int y, bool check = true){
+        int index = y*8 + x;
+        if(board[index].name == PIECE_NAMES::NO_PIECE) return {};
+
         std::vector<Move> out;
-        
+        MovePossibilities mp = getBaseMoves(board[index].name, board[index].moves_done);
+
+        for(int i = 0; i<mp.singleMoves.size(); i++){
+            Move translatedMove = translateMoves(mp.singleMoves[i]);
+            if(board[index].color == PIECE_COLOR::WHITE) reverseMove(translatedMove);
+            std::vector<Move> tmp = generateMoves(translatedMove, x, y, 1, check);
+            std::copy(tmp.begin(), tmp.end(), std::back_inserter(out));
+        }
+
+        for(int i = 0; i<mp.repeatingMoves.size(); i++){
+            Move translatedMove = translateMoves(mp.repeatingMoves[i]);
+            if(board[index].color == PIECE_COLOR::WHITE) reverseMove(translatedMove);
+            std::vector<Move> tmp = generateMoves(translatedMove, x, y, 8, check);
+            std::copy(tmp.begin(), tmp.end(), std::back_inserter(out));
+        }
+
         return out;
+    }
+
+    std::vector<Move> getMovesOfColor(PIECE_COLOR pc, bool check = true){
+        std::vector<Move> out;
+        for(int i = 0; i<64; i++){
+            if(board[i].name == PIECE_NAMES::NO_PIECE) continue;
+            if(board[i].color != pc) continue;
+
+            int x = i%8;
+            int y = i/8;
+            std::vector<Move> tmp = getMoves(x, y, check);
+            std::copy(tmp.begin(), tmp.end(), std::back_inserter(out));
+        }
+
+        return out;
+    }
+
+    bool isCheckmate(PIECE_COLOR pc){
+        int kingPos = getKingPosition(pc);
+        int kx = kingPos%8;
+        int ky = kingPos/8;
+        if(isKingUnderAttack(pc) and getMovesOfColor(pc).size() == 0) return true;
+        return false;
+    }
+
+    bool isStalemate(PIECE_COLOR pc){
+        int kingPos = getKingPosition(pc);
+        int kx = kingPos%8;
+        int ky = kingPos/8;
+        if(!isKingUnderAttack(pc) and getMovesOfColor(pc).size() == 0) return true;
+        return false;
     }
 };

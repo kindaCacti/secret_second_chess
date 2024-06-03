@@ -23,6 +23,10 @@ struct Move{
     Move operator*(int a) const{
         return {delta_x * a, delta_y * a};
     }
+
+    std::string toString(){
+        return std::to_string(delta_x) + "x"+std::to_string(delta_y) + "\n";
+    }
 };
 
 struct Piece{
@@ -32,8 +36,8 @@ struct Piece{
 };
 
 struct MovePossibilities{
-    std::vector<MOVES> singleMoves;
     std::vector<MOVES> repeatingMoves;
+    std::vector<MOVES> singleMoves;
 };
 
 char pieceChar(Piece tp){
@@ -67,10 +71,11 @@ char pieceChar(Piece tp){
     return out;
 }
 
-MovePossibilities getBaseMoves(PIECE_NAMES pn){
+MovePossibilities getBaseMoves(PIECE_NAMES pn, int moves_done = 0){
     switch(pn){
         case PIECE_NAMES::PAWN:
-            return {{}, {MOVES::UP, MOVES::PAWN_MOVES}};
+            if(!moves_done) return {{}, {MOVES::UP, MOVES::PAWN_MOVES}};
+            return {{}, {MOVES::UP}};
         case PIECE_NAMES::BISHOP:
             return {{MOVES::UL_DIAG, MOVES::UR_DIAG, MOVES::DL_DIAG, MOVES::DR_DIAG}, {}};
         case PIECE_NAMES::ROOK:
