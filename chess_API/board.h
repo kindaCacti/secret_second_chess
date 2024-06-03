@@ -2,6 +2,7 @@
 #include "pieces.h"
 #include <algorithm>
 #include <set>
+#include <iostream>
 
 class Board{
     Piece board[64];
@@ -88,14 +89,15 @@ public:
             Board nextBoard(this->board);
             nextBoard.makeMove(fx, fy, nm);
             PIECE_COLOR pc = board[fx + fy*8].color;
-            if(check and nextBoard.isKingUnderAttack(pc, false)) continue;
 
             if(at(nx, ny).name == PIECE_NAMES::NO_PIECE){
                 out.push_back(nm);
+                if(check and nextBoard.isKingUnderAttack(pc, false)) out.pop_back();
                 continue;
             }
 
-            if(at(nx, ny).color != at(fx, fy).color) out.push_back(nm);
+            if(at(nx, ny).color != at(fx, fy).color and at(fx, fy).name != PIECE_NAMES::PAWN) out.push_back(nm);
+            if(check and nextBoard.isKingUnderAttack(pc, false)) out.pop_back();
 
             break;
         }

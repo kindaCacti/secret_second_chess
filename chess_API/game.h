@@ -80,6 +80,7 @@ public:
     }
 
     void showPossibleMoves(std::ostream& os){
+        possibleMoves.clear();
         int movX = selectedPieceIndex%8;
         int movY = selectedPieceIndex/8;
 
@@ -88,7 +89,6 @@ public:
         for(Move mv : moves){
             possibleMoves.push_back(mv);
             os<<translateToChessCoordinates(mv)<<std::endl;
-            os<<mv.delta_x<<" "<<mv.delta_y<<std::endl;
         }
     }
 
@@ -114,6 +114,27 @@ public:
             }
         }
         return false;
+    }
+
+    bool isEnd(std::ostream& os){
+        if(gameBoard.isCheckmate(turn)){
+            os<<"CHECKMATE!!"<<std::endl;
+            ongoing = false;
+            return true;
+        }
+
+        if(gameBoard.isStalemate(turn)){
+            os<<"STALEMATE!!"<<std::endl;
+            ongoing = false;
+            return true;
+        }
+
+        if(gameBoard.isKingUnderAttack(turn)){
+            os<<"CHECK!!"<<std::endl;
+            return false;
+        }
+
+        return !ongoing;
     }
 };
 

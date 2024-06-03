@@ -30,6 +30,8 @@ int main(){
             }
 
         }while(game.getRound() == roundAtTheStart);
+
+        game.isEnd(std::cout);
     }
     return 0;
 }
